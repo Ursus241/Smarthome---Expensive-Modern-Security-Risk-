@@ -63,6 +63,7 @@ Installation
 ------------
 --> sudo apt install Arduino
 
+        ################################################################
         cd ~/Arduino/IDE
         # Entpacken
         tar -xvf arduino-1.8.13-linuxarm.tar.xz
@@ -72,6 +73,7 @@ Installation
         # Mit der Installation gibt es zunächst Probleme.
         # Das liegt an einem Ordner, der nicht richtig konfiguriert wird.
         rm -r ~/.arduino15/
+        ################################################################
 
 Reperatur und Start
 -------------------
