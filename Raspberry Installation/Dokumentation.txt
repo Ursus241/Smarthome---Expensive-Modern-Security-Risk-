@@ -1,0 +1,292 @@
+2020-11-13 Installation und erste Schritte
+==========================================
+
+Installation des Images
+2020-08-20-raspios-buster-armhf-full.img
+Danach automatisches Update
+
+Namen
+------
+Den Namen des Raspis kann man unter
+Raspimenü -> Einstellungen -> Raspberry-Pi-Konfiguration
+ändern
+Das betrifft aber nicht den Namen des WLAN? (siehe näheres unten)
+Ebenso aktiviert man dort die Schnittstellen
+SSH, VNC, Kamera
+
+Desktops
+--------
+Die Taskbar kann man so anpassen, dass sie mehrere Desktops anzeigt.
+Das macht das Arbeiten wesentlich übersichtlicher
+
+Installationen mit apt-get
+--------------------------
+# Die folgenden Zeilen sind ein Shell-Skript;
+# die Raute steht für eine ist ein Kommentarzeile
+#
+### exfat zur Verwebndung von USB-Sticks
+sudo apt-get install exfat-fuse
+# zugehörig, aber nicht verwendet:
+# sudo apt-get install exfat-utils
+#
+### Raspberry Pi Imager
+sudo apt-get install rpi-imager
+#
+### Bildschirmschoner
+sudo apt-get install xscreensaver
+#
+### Fritzing - Breadboards dokumentieren
+sudo apt-get install fritzing
+#
+### MQTT-Pakete
+#
+#
+
+Verzeichnisse von USB-Stick kopieren
+------------------------------------
+cp -r /media/pi/TRANSFIX3/pi/Arduino/ ~/
+cp -r /media/pi/TRANSFIX3/pi/Python/ ~/tmp/
+cp -r /media/pi/TRANSFIX3/pi/Skripte/ ~/
+cp -r /media/pi/TRANSFIX3/pi/Help/ ~/
+
+NODE RED - Dashboard
+--------------------
+Über Menü starten
+Die Weboberfläche ist dann unter localhost:1880 zu finden
+Über die Palette kann das Dashboard installiert werden.
+
+2020-11-14 Arduino IDE
+======================
+Alle Bibliotheken sind auf dem USB-Stick gesammelt, ebenso die IDE.
+
+Installation
+------------
+--> sudo apt install Arduino
+
+        cd ~/Arduino/IDE
+        # Entpacken
+        tar -xvf arduino-1.8.13-linuxarm.tar.xz
+        # Installation
+        cd arduino-1.8.13
+        sudo ./install.sh
+        # Mit der Installation gibt es zunächst Probleme.
+        # Das liegt an einem Ordner, der nicht richtig konfiguriert wird.
+        rm -r ~/.arduino15/
+
+Reperatur und Start
+-------------------
+Dann startet man die IDE und trägt als Speicherort folgendes ein:
+/home/pi/Arduino/sketchbook
+
+Unterstützung für ESP32 esp32
+-----------------------------
+Siehe
+https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/
+
+Unter Preferences (oder Voreinstellungen) trägt man beim Boardverwalter ein
+https://dl.espressif.com/dl/package_esp32_index.json
+
+Dann im Menü "Werkzeuge -> Board (Arduino...)  -> Boardverwalter"
+Dort sucht man nach "esp32" und installiert "esp32 by Espressif Systems"
+
+Libraries für ESP32
+-------------------
+Als Board stellt man zunächst auf "ESP32 Dev Module"
+Im Verzeichnis ~/Arduino/libraries/ sind schon alle Bibliotheken
+und man kann die Downloads sparen.
+Die Bibliotheken bindet man ein über
+"Sketch -> Bibl. einbinden -> ZIP-Bibl. hinzufügen"
+Lustigerweise ist dieser Schritt entfallen; die Bibs waren schon da!
+*** Sensor master ***
+https://github.com/adafruit/Adafruit_Sensor
+Dies ist eine Master-Bibliothek, die man für verschiedene Sensoren benötigt.
+Man geht auf "Code" und dort auf "Download ZIP".
+*** Sensor BME680 ***
+Es handelt sich um einen Rauchsensor (Gas?)
+Umsetzung:
+https://randomnerdtutorials.com/esp32-bme680-sensor-arduino/
+Download:
+https://github.com/adafruit/Adafruit_BME680
+Dort geht man auf "Code" und dort auf "Download ZIP".
+*** Sensor DHT ***
+Umsetzung:
+https://randomnerdtutorials.com/esp32-dht11-dht22-temperature-humidity-sensor-arduino-ide/
+Download:
+https://github.com/adafruit/DHT-sensor-library
+*** pubsubclient ***
+Publish and subscribe
+https://randomnerdtutorials.com/esp32-mqtt-publish-subscribe-arduino-ide/
+Download:
+https://github.com/knolleary/pubsubclient/
+Dort geht man auf "Code" und dort auf "Download ZIP".
+
+        wlan --> Hab ich nicht
+        ====
+        nach vorlage: t
+        https://www.az-delivery.de/blogs/azdelivery-blog-fur-arduino-und-raspberry-pi/raspberry-pi-als-accesspoint
+
+        um den namen des hotspots zu ändern:
+        sudo nano /etc/hostapd/hostapd.conf
+        dort statt "thielepi2" einen anderen namen eintragen. das is aber _nur_ der wlan-name, nicht der name des raspberries! (diesen über das config-tool)
+
+        ### shell-skripte
+        sudo apt-get update && sudo apt-get upgrade && sudo apt-get dist-upgrade && sudo apt-get autoremove && sudo apt-get autoclean
+        # interfaces anpassen
+        sudo nano /etc/network/interfaces
+
+        # dort tragen wir den text zwischen den beiden scheren ein (ohne die scheren)
+        ---8<---
+        # interfaces(5) file used by ifup(8) and ifdown(8)
+
+        # please note that this file is written to be used with dhcpcd
+        # for static ip, consult /etc/dhcpcd.conf and 'man dhcpcd.conf'
+
+        # include files from /etc/network/interfaces.d:
+        source-directory /etc/network/interfaces.d
+
+        # localhost
+        auto lo
+        iface lo inet loopback
+        # ethernet
+        auto eth0
+        iface eth0 inet dhcp
+        # wlan-interface
+        allow-hotplug wlan0
+        iface wlan0 inet static
+        address 192.168.222.1
+        netmask 255.255.255.0
+        ---8<---
+
+        # eintrag in die dhcpcd.conf
+        sudo nano /etc/dhcpcd.conf
+        # ganz am ende ergänzen (ohne scheren)
+        ---8<---
+        denyinterfaces wlan0
+        ---8<---
+        # reboot
+        sudo reboot
+
+        # install
+        sudo apt-get install dnsmasq
+        # sicherung alte konfiguration
+        sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf_alt
+        touch /etc/dnsmasq.conf
+        sudo nano /etc/dnsmasq.conf
+        # eintrag
+        ---8<---
+        interface=wlan0
+        no-dhcp-interface=eth0
+        dhcp-range=192.168.222.10,192.168.222.200,12h
+        dhcp-option=option:dns-server,192.168.222.1
+        ---8<---
+
+        # test
+        dnsmasq --test -c /etc/dnsmasq.conf
+        # als antwort sollte "dnsmasq: syntax check ok." erscheinen.
+
+        # aktivierung
+        sudo systemctl enable dnsmasq
+        # reboot
+        sudo reboot
+
+        # als letzten schritt aktivieren und installieren wir einen accesspoint:
+        sudo apt-get install hostapd
+        sudo nano /etc/hostapd/hostapd.conf
+        # inhalt:
+        ---8<---
+        interface=wlan0
+        ssid=raspberry-wlan
+        channel=1
+        hw_mode=g
+        ieee80211n=1
+        ieee80211d=1
+        country_code=de
+        wmm_enabled=1
+
+        auth_algs=1
+        wpa=2
+        wpa_key_mgmt=wpa-psk
+        rsn_pairwise=ccmp
+        wpa_passphrase=az-delivery
+        ---8<---
+        # der name des netzwerks steht unter ssid, das passwort unter wpa_passphrase
+
+        # wenn das wlan nun automatisch nach einem reboot erstellt werden soll,
+        # müssen wir das auch wieder in den autostart aktivieren:
+        sudo nano /etc/default/hostapd
+
+        # wir ergänzen folgendem dateiinhalt am ende der datei:
+        ---8<---
+        run_daemon=yes
+        daemon_conf="/etc/hostapd/hostapd.conf"
+        ---8<---
+        # und anschließend im system aktivieren:
+        sudo systemctl start hostapd
+        sudo systemctl enable hostapd
+        # nun können wir den raspberry neustarten und jederzeit
+        # mit diesem befehl den status abrufen:
+        sudo systemctl status hostapd
+
+        # hier gab es einen fehler
+        # https://github.com/raspberrypi/documentation/issues/1018
+        # es half:
+
+        sudo systemctl unmask hostapd
+        sudo systemctl enable hostapd
+        sudo systemctl start hostapd
+
+
+        2020-11-13 w-lan sendestärke
+        ============================
+
+        zunächst zwei skripte auf die startseite zum starten und stoppen
+        start_wlan.sh
+        ---8<---
+        #!/bin/bash
+        sudo systemctl start hostapd.service
+        ---8<---
+        stop_wlan.sh
+        ---8<---
+        #!/bin/bash
+        sudo systemctl stop hostapd.service
+        ---8<---
+
+        dann stellt man die sendeleistung ein. dazu
+        https://www.mikrocontroller.net/topic/494737
+
+        den pegel kann man mit
+        iw dev
+        aufrufen. dort sieht man, wieviel decibel das sind.
+
+        umd den pegel zu senken, tipp man ein:
+        sudo iw wlan0 set txpower limit 1
+
+        dies kann man automatisch einrichten (siehe obere homepage)
+        zitat:
+        falls das jemand dauerhaft machen möchte
+
+        1. .service datei erstellen
+        sudo nano /etc/systemd/system/lowtxpower.service
+
+        2. inhalt einfügen, dann beenden strg+x und speichern j
+        [unit]
+        description=low tx power 21dbm
+        after=network.target
+
+        [service]
+        execstart=sudo iw wlan0 set txpower limit 2100
+        workingdirectory= /etc/systemd/system
+        standardoutput=inherit
+        standarderror=inherit
+        restart=always
+        user=pi
+
+        [install]
+        wantedby=multi-user.target
+
+        3. einmalig starten (bei nächstem reboot wieder vergessen) oder
+        dauerhaft enablen
+        sudo systemctl start lowtxpower.service
+        sudo systemctl enable lowtxpower.service
+
+        zitatende.
