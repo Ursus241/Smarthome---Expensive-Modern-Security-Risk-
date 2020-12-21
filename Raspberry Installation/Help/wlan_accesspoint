@@ -1,0 +1,13 @@
+Erstellt nach 
+https://www.az-delivery.de/blogs/azdelivery-blog-fur-
+arduino-und-raspberry-pi/raspberry-pi-als-accesspoint
+
+Um den Namen des Hotspots zu ändern: 
+sudo nano /etc/hostapd/hostapd.conf
+Dort unter ssid einen anderen NAmen eintragen. DAs is aber _nur_ der WLAN-Name, nicht der Name des Raspberries! (Diesen über das Config-Tool)
+
+# Um das WLAN anzuhalten 
+sudo systemctl stop hostapd
+# um es wieder zu starten
+sudo systemctl start hostapd
+

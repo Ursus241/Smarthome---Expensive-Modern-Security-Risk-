@@ -1,0 +1,12 @@
+Mit screen kann man sich 
+
+Terminal, welches im Hintergrund läuft: 
+
+$ screen -S test
+
+Ctrl+A+D
+
+Wieder einloggen
+$ screen -r test
+
+$ exit

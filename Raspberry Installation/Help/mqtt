@@ -1,0 +1,9 @@
+Um zu lesen, was z.B. auf diesem Rechner über den Kanal esp32/# kommt: 
+
+pi@thielepi3:~/Help $ mosquitto_sub -h localhost -t esp32/# -v
+
+
+Resultat: 
+
+esp32/led_blau true
+esp32/led_blau false
